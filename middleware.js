@@ -3,6 +3,7 @@ const ExpressError = require('./utils/ExpressError');
 const Campground = require('./models/campground');
 const Review = require('./models/review.js');
 
+<<<<<<< HEAD
 module.exports.storeReturnTo = (req, res, next) => {
     if (req.session.returnTo) {
         res.locals.returnTo = req.session.returnTo;
@@ -11,6 +12,8 @@ module.exports.storeReturnTo = (req, res, next) => {
 }
 
 
+=======
+>>>>>>> ebf3e3b (add map, change styling)
 module.exports.isLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated()) {
         req.session.returnTo = req.originalUrl;
@@ -20,6 +23,10 @@ module.exports.isLoggedIn = (req, res, next) => {
     next();
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> ebf3e3b (add map, change styling)
 module.exports.validateCampground = (req, res, next) => {
     const { error } = campgroundSchema.validate(req.body);
     if (error) {
@@ -31,10 +38,19 @@ module.exports.validateCampground = (req, res, next) => {
     }
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> ebf3e3b (add map, change styling)
 module.exports.isAuthor = async (req, res, next) => {
     const { id } = req.params;
     const campground = await Campground.findById(id);
     if (!campground.author.equals(req.user_id)) {
+<<<<<<< HEAD
+=======
+        console.log(req.user_id);
+        console.log(campground.author);
+>>>>>>> ebf3e3b (add map, change styling)
         req.flash('error', 'You do not have permission to do that!');
         return res.redirect(`/campgrounds/${id}`);
     }
@@ -59,4 +75,15 @@ module.exports.isReviewAuthor = async (req, res, next) => {
         return res.redirect(`/campgrounds/${id}`);
     }
     next();
+<<<<<<< HEAD
 }
+=======
+}
+
+module.exports.storeReturnTo = (req, res, next) => {
+    if (req.session.returnTo) {
+        res.locals.returnTo = req.session.returnTo;
+    }
+    next();
+}
+>>>>>>> ebf3e3b (add map, change styling)

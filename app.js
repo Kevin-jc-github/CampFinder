@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+=======
+if(process.env.NODE_ENV !== "production"){
+    require('dotenv').config();
+}
+
+>>>>>>> ebf3e3b (add map, change styling)
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -10,6 +17,10 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const User = require('./models/user');
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> ebf3e3b (add map, change styling)
 const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
@@ -32,7 +43,10 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
+<<<<<<< HEAD
 
+=======
+>>>>>>> ebf3e3b (add map, change styling)
 app.use(express.static(path.join(__dirname, 'public')));
 
 const sessionConfig = {
@@ -42,7 +56,11 @@ const sessionConfig = {
     cookie: {
         httpOnly: true,
         expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+<<<<<<< HEAD
         maxAge: 1000 * 60 * 60 * 24 * 7
+=======
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+>>>>>>> ebf3e3b (add map, change styling)
     }
 }
 app.use(session(sessionConfig))
