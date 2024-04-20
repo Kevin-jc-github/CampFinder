@@ -38,3 +38,33 @@ This project is being created created using Node.js, Express, MongoDB, and Boots
 >Data Associations - associating user data with the respective campgrounds and comments using reference method
 
 >Heroku - cloud platform as a service used as a web application deployment model
+
+
+## ScreenShot：
+<div>
+<h5>HomePage 1</h5>
+<img width="1470" alt="775fbfbedb45318e10c6e4b20db01bb" src="https://github.com/Kevin-jc-github/YelpCamp2/assets/75607920/029e2946-7619-4cb1-8683-54d303e2d193">
+</div>
+<div>
+<h5>HomePage 2</h5>
+<img width="1470" alt="8e5a411d3f3cf5d2e471b57853b1fc2" src="https://github.com/Kevin-jc-github/YelpCamp2/assets/75607920/bd0b2ea0-42ae-4620-a2a3-fc3e0ddc3258">
+</div>
+<div>
+<h5>Post Page after Login</h5>
+<img width="1470" alt="d839db95ec9fe9889d654d9ab14ce7b" src="https://github.com/Kevin-jc-github/YelpCamp2/assets/75607920/3b9c0b84-593d-4cd9-856f-9485aeead222">
+</div>
+<div>
+<h5>Login Page</h5>
+<img width="1470" alt="03ff823a0059118f942d5301bc3cc98" src="https://github.com/Kevin-jc-github/YelpCamp2/assets/75607920/86d84c61-a79f-45f3-bd85-65943b4de23b">
+</div>
+<div>
+<h5>Register Page</h5>
+<img width="1470" alt="d83601512b0a074d8b679af26f254e0" src="https://github.com/Kevin-jc-github/YelpCamp2/assets/75607920/1306dc63-06af-4fa1-97c6-15bd96c2f39a">
+</div>
+
+
+
+
+
+
+
