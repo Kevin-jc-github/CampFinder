@@ -1,108 +1,379 @@
-# CampFinder 中国版
+<div align="center">
 
-CampFinder 已从一个 YelpCamp 教程项目升级为面向中国用户的露营地发现 MVP。当前版本修复了原仓库主分支中的合并冲突和权限问题，并完成了中国化的数据结构、中文产品界面、高德地图接入、搜索筛选、人民币计价、本地图片上传和基础生产安全配置。
+# CampFinder China
 
-界面支持右上角一键切换中文与 English，语言选择会保存在当前浏览器会话中。
+### An evidence-aware campsite discovery and recommendation system for China
 
-新版前端采用响应式旅行杂志风格：首页、全国营地目录、地图列表、营地详情、登录注册与发布表单均针对桌面和移动设备重新设计。
+面向中国露营场景的真实数据采集、可信度建模、地理空间推荐与主动核验系统
 
-项目当前的核心已经从“营地目录”升级为“面向不完整信息的可信发现与推荐系统”：
+[![Node.js](https://img.shields.io/badge/Node.js-18.18%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-2dsphere-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Tests](https://img.shields.io/badge/tests-23%20passing-2f855a)](#evaluation)
+[![License](https://img.shields.io/badge/code%20license-MIT-blue.svg)](LICENSE)
 
-- 字段级来源证据与可解释的 0–100 可信度评分
-- MongoDB 2dsphere 附近搜索与多信号推荐排序
-- 距离、预算、设施、类型、可信度和评分的推荐理由
-- 用户现场确认、纠错与冲突证据保留
-- 主动数据核验规划：在有限人工预算下兼顾信息风险、地区覆盖和问题类型覆盖
-- 规则式中英文设施抽取，并严格区分推断值和确认值
-- 数据质量 dashboard 与公开 JSON API
+[Why CampFinder?](#why-campfinder) · [Architecture](#system-architecture) · [Algorithms](#algorithmic-design) · [Quick start](#quick-start) · [API](#json-api) · [中文简介](#中文简介)
 
-详细设计见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)，评估方法见 [docs/EVALUATION.md](docs/EVALUATION.md)。
+</div>
 
-## 已实现
+## Overview
 
-- 按关键词、省份、营地类型、设施和价格筛选，支持分页与排序
-- 中国省/市/区地址、人民币价格、计价单位、开放季节和接待人数
-- 高德地图展示与高德地理编码，替代 Mapbox
-- 本地多图片上传，也可填写图片外链
-- 电话、微信和预订链接
-- 注册、登录、发布、编辑、删除和一次性评价
-- 作者权限校验、登录限流、安全 Cookie、MongoDB Session 生产配置
-- 8 个国内示例营地和 Node 内置测试
-- 可通过高德 POI 官方接口导入真实露营地，并标注数据来源和待核验状态
-- 可解释推荐、可信度评分、社区纠错、主动核验规划、数据质量分析和算法评估
+CampFinder is not only a campsite directory. It is a full-stack system for making decisions from location data that may be incomplete, stale, or contradictory.
 
-## 主动数据核验
+The system collects real campsite-related POIs across China, preserves field-level provenance, calculates an explainable reliability score, retrieves nearby candidates through geospatial indexing, ranks them against a camper's constraints, and determines which records should be verified first when human review capacity is limited.
 
-数据质量页面不再只是展示“可信度最低”的记录。`verify-plan-v1` 会先根据低可信度、陈旧信息、关键字段缺失、冲突报告和未知营业状态计算核验风险，再用带边际递减覆盖奖励的贪心算法选择一批任务，使有限的人力覆盖更多省份、城市和问题类型。
+The current local research snapshot contains **11,417 Amap POIs across 382 cities with results**. Raw third-party data is not committed to this repository; the reproducible ingestion and processing pipeline is.
 
-质量面板可直接查看可解释的核验队列，也可以调用：
+## Why CampFinder?
+
+Campsite information in China is commonly distributed across map applications, social platforms, official accounts, and individual travel posts. A traveller may find a location but still be unable to answer practical questions:
+
+- Is the campsite still operating?
+- Is the listed price current and does it represent an overnight stay?
+- Are toilets, showers, electricity, parking, or mobile signal actually available?
+- Are two conflicting claims equally trustworthy?
+- Which nearby campsite best matches the trip rather than merely having the highest rating?
+
+CampFinder treats this as an information-quality and decision-support problem. Instead of assuming that every database field is true, it models where a claim came from, how recent it is, whether other evidence agrees, and what remains unknown.
+
+## What makes it different
+
+- **Evidence-aware data model** — current listing data, source evidence, machine inference, and community reports are stored separately.
+- **Explainable reliability scoring** — every `0–100` trust score is decomposed into source, recency, completeness, community, and consistency components.
+- **Geospatial recommendation** — MongoDB candidate retrieval and multi-signal ranking combine distance with budget, amenities, campsite type, reliability, and rating.
+- **Active verification planning** — a greedy submodular-style planner allocates a limited verification budget across high-risk records, cities, provinces, and failure modes.
+- **Conservative information extraction** — bilingual rules identify campsite amenities while handling common negations and keeping inferred values separate from confirmed facts.
+- **Reproducible evaluation** — deterministic algorithms, versioned outputs, unit tests, synthetic baselines, and explicit limitations.
+
+## System architecture
 
 ```text
-GET /api/v1/verification-plan?limit=20
+Amap POI / owner listing / community field report
+                         │
+                         ▼
+        ingestion · validation · normalization · upsert
+                         │
+                         ▼
+        field-level evidence and provenance records
+                         │
+                         ▼
+            explainable reliability: trust-v1
+                         │
+              ┌──────────┴──────────┐
+              ▼                     ▼
+ geospatial recommendation   active verification planning
+      recommend-v1                 verify-plan-v1
+              │                     │
+              └──────────┬──────────┘
+                         ▼
+              bilingual web UI + JSON API
 ```
 
-算法目标、公式、复杂度和边界条件见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+The three main collections intentionally represent different concepts:
 
-## 本地启动
+| Collection | Responsibility |
+| --- | --- |
+| `Campground` | Current product-facing listing, coordinates, confirmed and inferred amenities, and materialized reliability |
+| `Evidence` | Source, capture time, field-level claims, confidence, licensing note, and evidence lifecycle |
+| `FieldReport` | A dated community observation that can support or dispute existing information without silently overwriting it |
 
-需要 Node.js 18.18+ 和 MongoDB。
+More detail is available in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Algorithmic design
+
+### 1. Explainable reliability scoring
+
+`trust-v1` calculates a deterministic information-reliability score:
+
+| Component | Maximum | Purpose |
+| --- | ---: | --- |
+| Source strength | 25 | Weigh owner and community evidence above a single imported source |
+| Recency | 25 | Apply a stepwise decay to older observations |
+| Completeness | 25 | Reward useful fields such as phone, hours, price, photos, and amenities |
+| Community confirmation | 15 | Distinguish accepted confirmations from pending reports |
+| Cross-source consistency | 10 | Penalize conflicting claims and unresolved corrections |
+
+```text
+Trust(c) = Source(c) + Recency(c) + Completeness(c)
+         + Community(c) + Consistency(c)
+```
+
+The score estimates how much supporting information CampFinder has. It is **not** a physical-safety guarantee.
+
+Implementation: [services/reliabilityEngine.js](services/reliabilityEngine.js)
+
+### 2. Geospatial and multi-objective recommendation
+
+Recommendations use a two-stage process:
+
+1. A MongoDB `2dsphere` index and `$near` query retrieve up to 300 candidates inside the requested radius.
+2. `recommend-v1` ranks those candidates using normalized, interpretable signals.
+
+| Signal | Weight |
+| --- | ---: |
+| Distance | 25% |
+| Amenity match | 20% |
+| Reliability | 20% |
+| Budget fit | 15% |
+| Campsite type | 10% |
+| Source rating | 10% |
+
+Distance is computed with the Haversine formula. Each result retains its component breakdown and explanation codes such as `nearby`, `within_budget`, `amenity_match`, and `high_reliability`.
+
+Implementation: [services/recommendationEngine.js](services/recommendationEngine.js)
+
+### 3. Bilingual amenity extraction
+
+`amenity-rules-v1` converts unstructured Chinese or English descriptions into candidate amenities. It supports explicit positive phrases and common negations such as “没有淋浴” or “no shower”.
+
+Inferred amenities include their evidence text, confidence, and model version and are stored separately from confirmed amenities. This prevents a machine-generated guess from being presented as verified information.
+
+Implementation: [services/amenityExtractor.js](services/amenityExtractor.js)
+
+### 4. Active verification planning
+
+When only `k` records can be checked by people, sorting by lowest trust may spend the entire budget on similar records from one dense city. `verify-plan-v1` first calculates verification risk from:
+
+```text
+Risk(c) = 30 × uncertainty
+        + 20 × staleness
+        + 25 × critical-field gaps
+        + 15 × conflicting reports
+        + 10 × unknown operating status
+```
+
+It then greedily maximizes a coverage-aware objective:
+
+```text
+F(S) = Σ risk(i)
+     + λp Σ √(selected count by province)
+     + λc Σ √(selected count by city)
+     + λf Σ √(selected count by primary failure mode)
+```
+
+The square-root terms create diminishing returns: selecting the first record from a city adds more coverage value than selecting the tenth similar record from that city. The objective is monotone and submodular under a cardinality constraint, giving the standard greedy algorithm its classic `1 - 1/e` approximation guarantee.
+
+The implementation runs in `O(nk)` time and `O(n)` memory. With 11,417 records and a verification budget of 20, the local development API responds in approximately 0.2 seconds.
+
+Implementation: [services/verificationPlanner.js](services/verificationPlanner.js)
+
+## Evaluation
+
+Run the complete deterministic evaluation:
 
 ```bash
-cp .env.example .env
+npm test
+npm run evaluate
+```
+
+Current checked-in results:
+
+| Evaluation | Result |
+| --- | ---: |
+| Automated tests | 23 / 23 passing |
+| Amenity extraction precision | 1.00 |
+| Amenity extraction recall | 0.905 |
+| Amenity extraction F1 | 0.95 |
+| Recommendation sanity margin | 84 points |
+
+The amenity result uses a deliberately small 15-example bilingual dataset. It validates the evaluation pipeline, not broad generalization.
+
+On the current 11,417-record local snapshot, both verification strategies were given 20 selections:
+
+| Strategy | Cities covered | Province-level regions | Average information risk |
+| --- | ---: | ---: | ---: |
+| Risk-only sorting | 1 | 1 | 41.1 |
+| Coverage-aware greedy planning | 20 | 20 | 41.1 |
+
+The coverage-aware method expanded geographic coverage without reducing average selected risk in this snapshot. See [docs/EVALUATION.md](docs/EVALUATION.md) for methodology and limitations.
+
+## Product capabilities
+
+- Search, filtering, pagination, and sorting by keyword, province, campsite type, amenity, and price
+- Chinese address structure, RMB pricing, opening season, capacity, phone, WeChat, and booking links
+- Amap JavaScript maps and server-side geocoding
+- Responsive Chinese/English interface with session-level language switching
+- Registration, authentication, author permissions, reviews, and local multi-image uploads
+- Community field reports for opening status, location, contact, hours, price, amenities, and safety concerns
+- Data-quality dashboard with reliability distribution, source coverage, unresolved issues, and algorithmic verification priorities
+- Public JSON endpoints for recommendation, trust evidence, and verification planning
+
+## Quick start
+
+### Requirements
+
+- Node.js `18.18+`
+- MongoDB
+- An Amap browser key for maps
+- An Amap Web Service key for geocoding and POI import
+
+### Installation
+
+```bash
+git clone https://github.com/Kevin-jc-github/CampFinder.git
+cd CampFinder
 npm install
-npm run seed
+cp .env.example .env
 npm run dev
 ```
 
-访问 `http://localhost:3000`。种子账号为 `campfinder_demo`，默认密码为 `CampFinder2026!`；可通过 `SEED_PASSWORD` 修改。
+Open [http://localhost:3100](http://localhost:3100).
 
-## 高德地图配置
+The application can run without Amap credentials, but maps, geocoding, and real-data import will be unavailable.
 
-在高德开放平台创建 Web 端 Key 和 Web 服务 Key，然后写入 `.env`：
+### Environment variables
 
 ```env
-AMAP_JS_KEY=你的Web端Key
-AMAP_SECURITY_JS_CODE=你的安全密钥securityJsCode
-AMAP_WEB_SERVICE_KEY=你的Web服务Key
+PORT=3100
+MONGO_URL=mongodb://127.0.0.1:27017/campfinder-cn
+SESSION_SECRET=replace-with-at-least-32-random-characters
+USE_MONGO_SESSION=false
+
+AMAP_JS_KEY=
+AMAP_SECURITY_JS_CODE=
+AMAP_WEB_SERVICE_KEY=
 ```
 
-不配置 Key 时其余功能仍可运行，页面会显示地图配置提示；发布营地时建议手动填写经纬度。
+Never commit `.env`. Browser keys, Web Service keys, and GitHub credentials must be managed outside the repository.
 
-配置 Web 服务 Key 后，可导入北京、上海、杭州、南京、成都、重庆、广州和深圳的高德“露营地”POI：
+## Loading data
+
+### Small local demonstration dataset
+
+```bash
+npm run seed
+```
+
+> [!WARNING]
+> `npm run seed` deletes all existing campgrounds and reviews from the configured database before inserting eight demonstration records. Use a separate development database.
+
+The demonstration account is `campfinder_demo`. Its development password defaults to `CampFinder2026!` and can be overridden with `SEED_PASSWORD`.
+
+### Selected-city Amap import
 
 ```bash
 npm run import:amap
 ```
 
-导入数据包含名称、地址、电话、坐标、营业时间、评分、参考消费和照片，并明确显示“高德 POI / 未经本站核验”。正式上线前需确认高德开放平台关于 POI 数据展示、缓存和商业使用的许可条款。
-
-同步全国城市及每个城市的全部分页数据：
+### Nationwide Amap import
 
 ```bash
 npm run import:amap:all
 ```
 
-全国同步进度保存在 `.cache/amap-import-progress.json`，中断或达到接口配额后可重复执行同一命令断点续跑。可通过 `AMAP_IMPORT_DELAY_MS` 调整请求间隔，通过 `AMAP_IMPORT_MAX_PAGES` 设置单城市最大页数。
+Nationwide progress is checkpointed in `.cache/amap-import-progress.json`. Re-running the command resumes completed-city progress. Requests include delay, retry, timeout, quota detection, and idempotent bulk upsert behavior.
 
-## 生产部署
-
-至少设置：
+Optional controls:
 
 ```env
-NODE_ENV=production
-MONGO_URL=mongodb://...
-SESSION_SECRET=至少32位随机字符串
-AMAP_JS_KEY=...
-AMAP_WEB_SERVICE_KEY=...
+AMAP_IMPORT_DELAY_MS=180
+AMAP_IMPORT_MAX_PAGES=40
+AMAP_IMPORT_CITY_LIMIT=0
+SEED_PASSWORD=replace-for-local-demo
 ```
 
-当前图片保存在本机 `uploads/`，适合单机 MVP。多实例或容器部署时应替换为阿里云 OSS、腾讯云 COS 或七牛云，并把上传、审核和图片压缩做成独立服务。
+After import, the script derives operating status, creates source evidence, recalculates reliability, and extracts inferred amenities.
 
-## 从 MVP 到正式产品的下一步
+## JSON API
 
-1. 接入手机号/微信登录、短信风控和账号找回。
-2. 建立营地主认领、营业资质、人工审核和“已核验”工作流。
-3. 增加收藏、行程单、附近搜索、距离排序、天气/防火/闭营提醒。
-4. 接入国内对象存储、CDN、图片审核和敏感词审核。
-5. 对接小程序、支付/退款、库存日历与订单系统。
-6. 上线前完成 ICP 备案、隐私政策、用户协议与个人信息保护合规评估。
+### Explainable recommendation
+
+```http
+GET /api/v1/recommendations?lng=121.47&lat=31.23&radiusKm=200&maxPrice=200&types=森林营地&amenities=淋浴
+```
+
+Returns ranked campsites with distance, trust score, component breakdown, and explanation codes.
+
+### Campground trust evidence
+
+```http
+GET /api/v1/campgrounds/:id/trust
+```
+
+Returns the materialized trust score, supporting sources, field coverage, and non-rejected community reports.
+
+### Verification plan
+
+```http
+GET /api/v1/verification-plan?limit=20
+```
+
+Returns a coverage-aware verification batch with base risk, missing fields, reason contributions, and marginal diversity bonuses.
+
+API routes are rate-limited to 120 requests per 15 minutes per client.
+
+## Available commands
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the server with Node watch mode |
+| `npm start` | Start the server normally |
+| `npm test` | Run all Node test suites |
+| `npm run evaluate` | Run algorithm baselines and metrics |
+| `npm run check` | Run JavaScript syntax checks |
+| `npm run seed` | Replace local campsite/review data with eight demo records |
+| `npm run import:amap` | Import selected cities and run post-processing |
+| `npm run import:amap:all` | Resume nationwide import and post-processing |
+| `npm run migrate:trust` | Materialize source evidence and trust scores |
+| `npm run extract:amenities` | Re-run amenity inference |
+| `npm run derive:status` | Recompute operational status labels |
+
+## Repository structure
+
+```text
+CampFinder/
+├── config/          # i18n and upload configuration
+├── controllers/     # web and API request handlers
+├── data/evaluation/ # checked-in labeled evaluation examples
+├── docs/            # architecture, evaluation, and project notes
+├── models/          # MongoDB schemas and indexes
+├── public/          # responsive styles and browser scripts
+├── routes/          # Express route definitions
+├── scripts/         # migration, extraction, status, and evaluation jobs
+├── seeds/           # demo seeding and resumable Amap ingestion
+├── services/        # pure algorithm and domain-service modules
+├── test/            # Node test suites
+└── views/           # bilingual EJS templates
+```
+
+## Known limitations
+
+- Amap text search can cap retrievable POIs in dense cities.
+- A POI reference cost is not necessarily an overnight campsite price.
+- Imported records are real POIs but are not automatically verified by CampFinder.
+- Recommendation weights are explicit product hypotheses, not parameters learned from large-scale user behavior.
+- Haversine distance approximates proximity; it does not represent driving time or route accessibility.
+- The amenity evaluation set is too small for generalization claims.
+- Community reports need a complete moderator workflow before production deployment.
+- Local image storage is suitable for a single-instance MVP, not a horizontally scaled service.
+
+## Roadmap
+
+- Collect a larger double-annotated amenity dataset and report inter-annotator agreement
+- Evaluate recommendation quality with user-ranked candidate sets, NDCG@5, and ablation studies
+- Add routing-based travel time, weather, fire restrictions, and temporary-closure alerts
+- Build owner claiming and evidence moderation workflows
+- Move media to object storage with content review and image processing
+- Add favourites, trip planning, and privacy-preserving usage signals
+
+## Data and licensing
+
+The source code is available under the [MIT License](LICENSE).
+
+Amap-derived data is **not** covered by the MIT code license. Anyone operating or distributing an imported dataset must independently comply with Amap's API, display, storage, attribution, and commercial-use terms. CampFinder does not claim that every imported POI is an operating campsite or that third-party values have been verified.
+
+## Contributing
+
+Issues and pull requests are welcome. For algorithm changes, please include:
+
+1. the problem or failure case being addressed;
+2. a deterministic test or evaluation example;
+3. comparison with the current baseline;
+4. any new assumptions, data requirements, or user-safety implications.
+
+This keeps the project focused on measurable improvements rather than feature accumulation.
+
+## 中文简介
+
+CampFinder 是一个面向中国露营场景的信息可信发现系统。它不仅提供营地搜索与地图展示，还把数据来源、更新时间、字段完整度和用户纠错建模为证据，通过可解释的可信度评分与地理空间推荐帮助用户决策；同时使用带边际收益递减的贪心规划算法，在人工核验资源有限时优先覆盖高风险且具有代表性的地区。
+
+项目的重点是处理真实世界中的不完整信息，而不是单纯完成一个营地增删改查网站。
