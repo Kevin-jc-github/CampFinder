@@ -1,0 +1,2 @@
+<% if (success?.length) { %><div class="alert site-alert alert-success alert-dismissible fade show" role="alert"><span class="alert-icon">✓</span><%= success.map(tf).join(lang === 'en' ? '; ' : '；') %><button class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div><% } %>
+<% if (error?.length) { %><div class="alert site-alert alert-danger alert-dismissible fade show" role="alert"><span class="alert-icon">!</span><%= error.map(tf).join(lang === 'en' ? '; ' : '；') %><button class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div><% } %>

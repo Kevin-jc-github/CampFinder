@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="<%= lang === 'en' ? 'en' : 'zh-CN' %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="<%= t('site.description') %>">
+  <meta name="theme-color" content="#183b32">
+  <title><%= t('site.title') %></title>
+  <link rel="preconnect" href="https://cdn.bootcdn.net">
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/stylesheets/app.css">
+  <link rel="stylesheet" href="/stylesheets/source.css">
+  <% if (amapKey) { %>
+    <% if (amapSecurityCode) { %><script>window._AMapSecurityConfig = { securityJsCode: '<%= amapSecurityCode %>' };</script><% } %>
+    <script src="https://webapi.amap.com/maps?v=2.0&key=<%= amapKey %>"></script>
+  <% } %>
+</head>
+<body class="d-flex flex-column min-vh-100 <%= lang === 'en' ? 'lang-en' : 'lang-zh' %>">
+  <%- include('../partials/navbar') %>
+  <main class="flex-grow-1">
+    <div class="container flash-wrap"><%- include('../partials/flash') %></div>
+    <%- body %>
+  </main>
+  <%- include('../partials/footer') %>
+  <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="/javascripts/validateForms.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<% layout('layouts/boilerplate') %>
+<section class="home-hero">
+  <div class="hero-orb hero-orb-one"></div><div class="hero-orb hero-orb-two"></div>
+  <div class="container hero-layout">
+    <div class="hero-copy">
+      <div class="overline light"><span></span><%= t('home.kicker') %></div>
+      <h1><%= t('home.title1') %><br><em><%= t('home.title2') %></em></h1>
+      <p class="hero-lead"><%= t('home.subtitle') %></p>
+      <form action="/campgrounds" class="hero-search-new"><span class="search-icon" aria-hidden="true"></span><input name="q" autocomplete="off" placeholder="<%= t('home.searchPlaceholder') %>"><button><%= t('home.search') %><span aria-hidden="true">→</span></button></form>
+      <div class="trust-row"><span>● <%= t('home.trust1') %></span><span>● <%= t('home.trust2') %></span><span>● <%= t('home.trust3') %></span></div>
+    </div>
+    <div class="hero-visual">
+      <div class="visual-frame"><div class="mountain-scene"><div class="sun-glow"></div><div class="mountain far"></div><div class="mountain near"></div><div class="tent"><i></i></div><div class="campfire">✦</div></div><div class="inspiration-card"><span class="overline dark"><%= t('home.cardKicker') %></span><h2><%= t('home.cardTitle') %></h2><p><%= t('home.cardText') %></p><a href="/campgrounds"><%= t('home.browse') %> <span>↗</span></a></div></div>
+      <div class="floating-badge"><strong><%= campCount > 999 ? `${Math.floor(campCount / 1000)}K+` : campCount %></strong><span><%= t('home.statCamps') %></span></div>
+    </div>
+  </div>
+  <div class="container hero-stats"><div><strong><%= campCount.toLocaleString(lang === 'en' ? 'en-US' : 'zh-CN') %></strong><span><%= t('home.statCamps') %></span></div><div><strong><%= cityCount %></strong><span><%= t('home.statCities') %></span></div><div><strong>8</strong><span><%= t('home.statTypes') %></span></div></div>
+</section>

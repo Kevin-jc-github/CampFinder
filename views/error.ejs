@@ -1,0 +1,1 @@
+<% layout('layouts/boilerplate') %><section class="error-page"><div class="error-code"><%= err.statusCode %></div><span class="overline dark">LOST IN THE WILD</span><h1><%= lang === 'en' && err.statusCode === 404 ? 'This trail leads nowhere.' : err.message %></h1><a class="primary-action" href="/campgrounds">← <%= t('error.back') %></a></section>

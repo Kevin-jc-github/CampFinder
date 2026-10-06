@@ -1,0 +1,17 @@
+[
+  { "text": "营地提供公共卫生间、热水淋浴和免费停车场。", "amenities": ["卫生间", "淋浴", "停车场"] },
+  { "text": "宠物友好，可以带狗，但禁止明火。", "amenities": ["可带宠物"] },
+  { "text": "需自带帐篷，不提供装备租赁，营地有餐厅和早餐。", "amenities": ["餐饮"] },
+  { "text": "房车营位配有水电桩和充电设施。", "amenities": ["水电桩"] },
+  { "text": "亲子自然教育、儿童乐园和周末手工活动。", "amenities": ["儿童活动"] },
+  { "text": "山里没有手机信号，也没有淋浴。", "amenities": [] },
+  { "text": "可以生火和举办篝火活动，森林防火期除外。", "amenities": ["可明火"] },
+  { "text": "提供帐篷租赁，游客可以拎包入住。", "amenities": ["装备租赁"] },
+  { "text": "Forest campsite with showers, parking and mobile signal.", "amenities": ["淋浴", "停车场", "手机信号"] },
+  { "text": "No pets and no open fires. Restrooms are available.", "amenities": ["卫生间"] },
+  { "text": "营地旁有停车区，咖啡店提供简餐。", "amenities": ["停车场", "餐饮"] },
+  { "text": "这里只是一片草地，请自行准备所有装备和食物。", "amenities": [] },
+  { "text": "欢迎携带宠物，提供淋浴、卫生间与烧烤套餐。", "amenities": ["可带宠物", "淋浴", "卫生间", "餐饮"] },
+  { "text": "场地附近可以停车，但无法停车过夜。", "amenities": ["停车场"] },
+  { "text": "移动联通信号良好，支持4G，营地不提供餐饮。", "amenities": ["手机信号"] }
+]
