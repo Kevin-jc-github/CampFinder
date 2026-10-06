@@ -1,20 +1,9 @@
-mapboxgl.accessToken = mapToken;
-const map = new mapboxgl.Map({
-    container: 'map', // container ID
-    style: 'mapbox://styles/mapbox/streets-v12', // style URL
-    center: campground.geometry.coordinates, // starting position [lng, lat]
-    zoom: 10, // starting zoom
-});
-
-map.addControl(new mapboxgl.NavigationControl());
-
-
-new mapboxgl.Marker()
-    .setLngLat(campground.geometry.coordinates)
-    .setPopup(
-        new mapboxgl.Popup({ offset: 25 })
-            .setHTML(
-                `<h3>${campground.title}</h3><p>${campground.location}</p>`
-            )
-    )
-    .addTo(map)
+(() => {
+  const container = document.getElementById('map');
+  const camp = window.campgroundData;
+  const coordinates = camp?.geometry?.coordinates;
+  if (!container || !window.AMap || !Array.isArray(coordinates)) return;
+  const map = new AMap.Map('map', { zoom: 13, center: coordinates, viewMode: '2D' });
+  const marker = new AMap.Marker({ position: coordinates, title: camp.title });
+  map.add(marker);
+})();

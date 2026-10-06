@@ -1,65 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<<<<<<< HEAD
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-</head>
-<body>
-    <h1>HOME! YELPCAMP</h1>
-</body>
-=======
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YelpCamp</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css"
-        integrity="sha384-r4NyP46KrjDleawBgD5tp8Y7UzmLA05oM1iAEQ17CSuDqnUK2+k9luXQOfXJCJ4I" crossorigin="anonymous">
-    <link rel="stylesheet" href="/stylesheets/home.css">
-</head>
-
-<body class="d-flex text-center text-white bg-dark">
-    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-        <header class="mb-auto">
-            <div>
-                <h3 class="float-md-left mb-0">YelpCamp</h3>
-                <nav class="nav nav-masthead justify-content-center float-md-right">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
-                    <a class="nav-link" href="/campgrounds">Campgrounds</a>
-                    <% if(!currentUser) { %>
-                        <a class="nav-link" href="/login">Login</a>
-                        <a class="nav-link" href="/register">Register</a>
-                        <% } else { %>
-                            <a class="nav-link" href="/logout">Logout</a>
-                            <% } %>
-                </nav>
-            </div>
-        </header>
-        <main class="px-3">
-            <h1>YelpCamp</h1>
-            <p class="lead"> Welcome to YelpCamp! <br> Jump right in and explore our many campgrounds. <br>
-                Feel free to share some of your own and comment on others!</p>
-            <a href="/campgrounds" class="btn btn-lg btn-secondary font-weight-bold border-white bg-white">View
-                Campgrounds</a>
-        </main>
-
-        <footer class="mt-auto text-white-50">
-            <p>&copy; 2024 By Kevin Zhu </p>
-        </footer>
-
-
+<% layout('layouts/boilerplate') %>
+<section class="home-hero">
+  <div class="hero-orb hero-orb-one"></div><div class="hero-orb hero-orb-two"></div>
+  <div class="container hero-layout">
+    <div class="hero-copy">
+      <div class="overline light"><span></span><%= t('home.kicker') %></div>
+      <h1><%= t('home.title1') %><br><em><%= t('home.title2') %></em></h1>
+      <p class="hero-lead"><%= t('home.subtitle') %></p>
+      <form action="/campgrounds" class="hero-search-new"><span class="search-icon" aria-hidden="true"></span><input name="q" autocomplete="off" placeholder="<%= t('home.searchPlaceholder') %>"><button><%= t('home.search') %><span aria-hidden="true">→</span></button></form>
+      <div class="trust-row"><span>● <%= t('home.trust1') %></span><span>● <%= t('home.trust2') %></span><span>● <%= t('home.trust3') %></span></div>
     </div>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js"
-        integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/"
-        crossorigin="anonymous"></script>
-</body>
-
->>>>>>> ebf3e3b (add map, change styling)
-</html>
+    <div class="hero-visual">
+      <div class="visual-frame"><div class="mountain-scene"><div class="sun-glow"></div><div class="mountain far"></div><div class="mountain near"></div><div class="tent"><i></i></div><div class="campfire">✦</div></div><div class="inspiration-card"><span class="overline dark"><%= t('home.cardKicker') %></span><h2><%= t('home.cardTitle') %></h2><p><%= t('home.cardText') %></p><a href="/campgrounds"><%= t('home.browse') %> <span>↗</span></a></div></div>
+      <div class="floating-badge"><strong><%= campCount > 999 ? `${Math.floor(campCount / 1000)}K+` : campCount %></strong><span><%= t('home.statCamps') %></span></div>
+    </div>
+  </div>
+  <div class="container hero-stats"><div><strong><%= campCount.toLocaleString(lang === 'en' ? 'en-US' : 'zh-CN') %></strong><span><%= t('home.statCamps') %></span></div><div><strong><%= cityCount %></strong><span><%= t('home.statCities') %></span></div><div><strong>8</strong><span><%= t('home.statTypes') %></span></div></div>
+</section>

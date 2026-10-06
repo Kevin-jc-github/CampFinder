@@ -1,74 +1,27 @@
-<<<<<<< HEAD
 <% layout('layouts/boilerplate') %>
-<h1>All Campgrounds</h1>
-<div>
-    <a href="/campgrounds/new">Add Campgrounds</a>
-</div>
-<% for (let campground of campgrounds) {%>
-    <div class="card" mb-3>
-        <div class="row">
-            <div class="col-md-4">
-                <img class="img-fluid" alt="" src="<%= campground.image %>">
-            </div>
-            <div  class="col-md-8">
-                <div class="card-body">
-                    <h5 class="card-title"><%= campground.title %></h5>
-                    <p class="card-text"><%= campground.description %></p>
-                    <p class="card-text">
-                        <small class="text-muted"><%= campground.location %></small>
-                    </p>
-                    <a class="btn btn-primary" href="/campgrounds/<%= campground._id %>">View <%= campground.title %></a>
-                </div>
-            </div>
-        </div>
+<section class="directory-hero"><div class="container"><div class="overline dark"><span></span><%= t('list.kicker') %></div><div class="directory-heading"><div><h1><%= t('list.title') %></h1><p><strong><%= pagination.total.toLocaleString(lang === 'en' ? 'en-US' : 'zh-CN') %></strong> <%= t('list.count') %></p></div><a href="/campgrounds/new" class="btn primary-action"><span>＋</span><%= t('list.publish') %></a></div></div></section>
+<section class="container directory-content">
+  <form class="filter-dock" method="GET">
+    <div class="filter-field search-field"><label><%= t('filter.keyword') %></label><div><span class="mini-search"></span><input name="q" value="<%= filters.q || '' %>" placeholder="<%= t('filter.keywordPlaceholder') %>"></div></div>
+    <div class="filter-field"><label><%= t('filter.province') %></label><select name="province"><option value=""><%= t('filter.allProvinces') %></option><% provinces.forEach(item => { %><option <%= filters.province === item ? 'selected' : '' %>><%= item %></option><% }) %></select></div>
+    <div class="filter-field"><label><%= t('filter.type') %></label><select name="type"><option value=""><%= t('filter.allTypes') %></option><% ['山野营地','湖畔营地','海边营地','森林营地','草原营地','房车营地','亲子营地','精致露营'].forEach(item => { %><option value="<%= item %>" <%= filters.type === item ? 'selected' : '' %>><%= tv(item) %></option><% }) %></select></div>
+    <div class="filter-field"><label><%= t('filter.amenity') %></label><select name="amenity"><option value=""><%= t('filter.any') %></option><% ['卫生间','淋浴','水电桩','停车场','可明火','可带宠物','儿童活动','装备租赁','餐饮','手机信号'].forEach(item => { %><option value="<%= item %>" <%= filters.amenity === item ? 'selected' : '' %>><%= tv(item) %></option><% }) %></select></div>
+    <div class="filter-field"><label><%= t('filter.sort') %></label><select name="sort"><option value="reliable" <%= !filters.sort || filters.sort === 'reliable' ? 'selected' : '' %>><%= lang === 'en' ? 'Most reliable' : '可信度优先' %></option><option value="newest" <%= filters.sort === 'newest' ? 'selected' : '' %>><%= t('filter.newest') %></option><option value="priceAsc" <%= filters.sort === 'priceAsc' ? 'selected' : '' %>><%= t('filter.priceAsc') %></option><option value="priceDesc" <%= filters.sort === 'priceDesc' ? 'selected' : '' %>><%= t('filter.priceDesc') %></option></select></div>
+    <button class="filter-submit"><%= t('filter.submit') %><span>→</span></button>
+  </form>
+  <% if (Object.keys(filters).some(key => filters[key] && key !== 'page')) { %><a class="reset-link" href="/campgrounds">× <%= t('filter.reset') %></a><% } %>
+  <div class="directory-layout">
+    <div class="map-column"><div class="map-shell map-tall"><div id="cluster-map"></div><% if (!amapKey) { %><div class="map-empty"><%= t('map.missing') %></div><% } %><div class="map-count"><strong><%= pagination.total.toLocaleString() %></strong><span><%= t('home.statCamps') %></span></div></div></div>
+    <div class="results-column">
+      <% if (!campgrounds.length) { %><div class="empty-state"><div class="empty-icon">⌁</div><h2><%= t('list.empty') %></h2><p><%= t('list.emptyHint') %></p></div><% } %>
+      <% campgrounds.forEach(campground => { const cover = campground.images?.[0]?.url || '/images/camp-placeholder.svg'; %>
+        <article class="camp-list-card">
+          <a class="camp-image-wrap" href="/campgrounds/<%= campground._id %>"><img src="<%= cover %>" alt="<%= campground.title %>" loading="lazy" onerror="this.onerror=null;this.src='/images/camp-placeholder.svg'"><span class="image-shade"></span><% if (campground.sourceRating) { %><span class="image-rating">★ <%= campground.sourceRating %></span><% } %></a>
+          <div class="camp-list-body"><div class="camp-meta"><span class="camp-type"><%= tv(campground.type) %></span><span class="trust-chip trust-<%= campground.reliability?.level || 'low' %>"><%= lang === 'en' ? 'Trust' : '可信度' %> <%= campground.reliability?.score ?? 0 %></span><% if (campground.dataSource === 'amap') { %><span class="source-label"><%= t('card.amap') %></span><% } else if (campground.verified) { %><span class="verified">✓ <%= t('card.verified') %></span><% } %></div><h2><a href="/campgrounds/<%= campground._id %>"><%= campground.title %></a></h2><p class="location-line"><span>⌖</span><%= campground.province %> · <%= campground.city %> · <%= campground.location %></p><p class="description-line"><%= lang === 'en' && campground.dataSource === 'amap' ? `${campground.title} is an Amap-listed campsite in ${campground.city}. Contact the operator to confirm rates, overnight policies and amenities.` : campground.description %></p><div class="camp-card-footer"><span><%= campground.capacity ? t('card.capacity', { count: campground.capacity }) : (campground.sourceRating ? `${t('card.rating')} ${campground.sourceRating}` : t('card.pending')) %></span><div class="card-price"><% if (campground.price != null) { %><strong>¥<%= campground.price %></strong><small>/<%= tv(campground.priceUnit) %></small><% } else if (campground.sourceReferenceCost != null) { %><strong>¥<%= campground.sourceReferenceCost %></strong><small><%= t('card.referenceCost') %></small><% } else { %><b><%= t('card.pricePending') %></b><% } %></div></div></div>
+        </article>
+      <% }) %>
+      <% if (pagination.pages > 1) { %><nav class="pagination-shell"><a class="page-arrow <%= pagination.page <= 1 ? 'disabled' : '' %>" href="<%= pageUrl(pagination.page - 1) %>">← <%= t('pagination.previous') %></a><span><strong><%= pagination.page %></strong> / <%= pagination.pages %></span><a class="page-arrow <%= pagination.page >= pagination.pages ? 'disabled' : '' %>" href="<%= pageUrl(pagination.page + 1) %>"><%= t('pagination.next') %> →</a></nav><% } %>
     </div>
-<% } %>
-
-=======
-<% layout('layouts/boilerplate')%>
-    <div id="cluster-map"></div>
-    <div class="container">
-        <h1>All Campgrounds</h1>
-        <div>
-            <a href="/campgrounds/new">Add Campground</a>
-        </div>
-        <% for (let campground of campgrounds){%>
-            <div class="card  mb-3">
-                <div class="row">
-                    <div class="col-md-4">
-                        <%if(campground.images.length) {%>
-                            <img class="img-fluid" alt="" src="<%=campground.images[0].url%>">
-                            <% }else {%>
-                                <img class="img-fluid" alt=""
-                                    src="https://res.cloudinary.com/douqbebwk/image/upload/v1600103881/YelpCamp/lz8jjv2gyynjil7lswf4.png">
-                                <% } %>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <%= campground.title %>
-                            </h5>
-
-                            <p class="card-text">
-                                <%= campground.description %>
-                            </p>
-                            <p class="card-text">
-                                <small class="text-muted">
-                                    <%= campground.location%>
-                                </small>
-                            </p>
-                            <a class="btn btn-primary" href="/campgrounds/<%=campground._id%>">View
-                                <%=campground.title%></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <% }%>
-    </div>
-    <script>
-        const mapToken = '<%-process.env.MAPBOX_TOKEN%>';
-        const campgrounds = { features: <%- JSON.stringify(campgrounds) %>}
-    </script>
-
-    <script src="/javascripts/clusterMap.js"></script>
->>>>>>> ebf3e3b (add map, change styling)
+  </div>
+</section>
+<script>window.campfinderMapData = <%- JSON.stringify(mapCampgrounds).replace(/</g, '\\u003c') %>; window.campfinderUi = <%- JSON.stringify({ view: lang === 'en' ? 'View details' : '查看详情', pricePending: t('card.pricePending'), referenceCost: t('card.referenceCost') }).replace(/</g, '\\u003c') %>;</script><script src="/javascripts/clusterMap.js"></script>

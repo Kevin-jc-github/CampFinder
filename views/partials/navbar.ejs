@@ -1,23 +1,13 @@
-<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">YelpCamp</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-          <a class="nav-link" href="/">Home</a>
-          <a class="nav-link" href="/campgrounds">Campgrounds</a>
-          <a class="nav-link" href="/campgrounds/new">New Campground</a>
-        </div>
-        <div class="navbar-nav ml-auto">
-          <% if(!currentUser) {%>
-            <a class="nav-link" href="/login">Login</a>
-            <a class="nav-link" href="/register">Register</a>
-          <% } else { %>
-              <a class="nav-link" href="/logout">Logout</a>
-          <% } %>
-        </div>
+<nav class="navbar navbar-expand-lg navbar-dark site-nav sticky-top">
+  <div class="container nav-container">
+    <a class="navbar-brand brand-lockup" href="/" aria-label="CampFinder home"><span class="brand-mark" aria-hidden="true"><span></span></span><span>CampFinder</span></a>
+    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-label="Menu"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <div class="navbar-nav mx-lg-auto nav-main-links"><a class="nav-link" href="/campgrounds"><%= t('nav.explore') %></a><a class="nav-link" href="/recommendations"><%= lang === 'en' ? 'For you' : '智能推荐' %></a><a class="nav-link" href="/quality"><%= lang === 'en' ? 'Data quality' : '数据质量' %></a><a class="nav-link" href="/campgrounds/new"><%= t('nav.publish') %></a></div>
+      <div class="navbar-nav align-items-lg-center nav-actions">
+        <div class="language-switch" aria-label="Language"><a class="<%= lang === 'zh' ? 'active' : '' %>" href="/language/zh?next=<%= encodeURIComponent(currentUrl) %>">中文</a><span></span><a class="<%= lang === 'en' ? 'active' : '' %>" href="/language/en?next=<%= encodeURIComponent(currentUrl) %>">EN</a></div>
+        <% if (!currentUser) { %><a class="nav-link login-link" href="/login"><%= t('nav.login') %></a><a class="btn nav-cta" href="/register"><%= t('nav.register') %></a><% } else { %><span class="navbar-text user-greeting"><%= t('nav.hello') %>, <%= currentUser.username %></span><form action="/logout" method="POST"><button class="btn nav-logout"><%= t('nav.logout') %></button></form><% } %>
       </div>
     </div>
-  </nav>
+  </div>
+</nav>

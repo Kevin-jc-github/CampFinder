@@ -1,89 +1,52 @@
-const { campgroundSchema, reviewSchema } = require('./schemas.js');
+const { campgroundSchema, reviewSchema, fieldReportSchema } = require('./schemas');
 const ExpressError = require('./utils/ExpressError');
 const Campground = require('./models/campground');
-const Review = require('./models/review.js');
+const Review = require('./models/review');
 
-<<<<<<< HEAD
 module.exports.storeReturnTo = (req, res, next) => {
-    if (req.session.returnTo) {
-        res.locals.returnTo = req.session.returnTo;
-    }
-    next();
-}
-
-
-=======
->>>>>>> ebf3e3b (add map, change styling)
+  if (req.session.returnTo) res.locals.returnTo = req.session.returnTo;
+  next();
+};
 module.exports.isLoggedIn = (req, res, next) => {
-    if (!req.isAuthenticated()) {
-        req.session.returnTo = req.originalUrl;
-        req.flash('error', 'you must be signed in first');
-        return res.redirect('/login');
-    }
-    next();
-}
-
-<<<<<<< HEAD
-=======
-
->>>>>>> ebf3e3b (add map, change styling)
+  if (!req.isAuthenticated()) {
+    req.session.returnTo = req.originalUrl;
+    req.flash('error', '请先登录后再操作');
+    return res.redirect('/login');
+  }
+  next();
+};
 module.exports.validateCampground = (req, res, next) => {
-    const { error } = campgroundSchema.validate(req.body);
-    if (error) {
-        const msg = error.details.map(el => el.message).join(',')
-        throw new ExpressError(msg, 400)
-    }
-    else {
-        next();
-    }
-}
-
-<<<<<<< HEAD
-=======
-
->>>>>>> ebf3e3b (add map, change styling)
+  const { error } = campgroundSchema.validate(req.body, { abortEarly: false });
+  if (error) throw new ExpressError(error.details.map(item => item.message).join('；'), 400);
+  next();
+};
 module.exports.isAuthor = async (req, res, next) => {
-    const { id } = req.params;
-    const campground = await Campground.findById(id);
-    if (!campground.author.equals(req.user_id)) {
-<<<<<<< HEAD
-=======
-        console.log(req.user_id);
-        console.log(campground.author);
->>>>>>> ebf3e3b (add map, change styling)
-        req.flash('error', 'You do not have permission to do that!');
-        return res.redirect(`/campgrounds/${id}`);
-    }
-    next();
-}
-
+  const campground = await Campground.findById(req.params.id);
+  if (!campground) throw new ExpressError('未找到该营地', 404);
+  if (!campground.author.equals(req.user._id)) {
+    req.flash('error', '你没有权限修改这个营地');
+    return res.redirect(`/campgrounds/${req.params.id}`);
+  }
+  res.locals.campground = campground;
+  next();
+};
 module.exports.validateReview = (req, res, next) => {
-    const{error} = reviewSchema.validate(req.body);
-    if(error){
-        const msg = error.details.map(el => el.message).join(',');
-        throw new ExpressError(msg,400);
-    }else{
-        next();
-    }
-}
+  const { error } = reviewSchema.validate(req.body, { abortEarly: false });
+  if (error) throw new ExpressError(error.details.map(item => item.message).join('；'), 400);
+  next();
+};
 
+module.exports.validateFieldReport = (req, res, next) => {
+  const { error } = fieldReportSchema.validate(req.body, { abortEarly: false });
+  if (error) throw new ExpressError(error.details.map(item => item.message).join('；'), 400);
+  next();
+};
 module.exports.isReviewAuthor = async (req, res, next) => {
-    const { id,reviewId } = req.params;
-    const review = await Review.findById(reviewId);
-    if (!review.author.equals(req.user_id)) {
-        req.flash('error', 'You do not have permission to do that!');
-        return res.redirect(`/campgrounds/${id}`);
-    }
-    next();
-<<<<<<< HEAD
-}
-=======
-}
-
-module.exports.storeReturnTo = (req, res, next) => {
-    if (req.session.returnTo) {
-        res.locals.returnTo = req.session.returnTo;
-    }
-    next();
-}
->>>>>>> ebf3e3b (add map, change styling)
+  const review = await Review.findById(req.params.reviewId);
+  if (!review) throw new ExpressError('未找到该评价', 404);
+  if (!review.author.equals(req.user._id)) {
+    req.flash('error', '你没有权限删除这条评价');
+    return res.redirect(`/campgrounds/${req.params.id}`);
+  }
+  next();
+};

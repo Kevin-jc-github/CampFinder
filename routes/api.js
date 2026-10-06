@@ -1,0 +1,10 @@
+const express = require('express');
+const { rateLimit } = require('express-rate-limit');
+const catchAsync = require('../utils/catchAsync');
+const api = require('../controllers/api');
+const router = express.Router();
+router.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 120, standardHeaders: 'draft-7', legacyHeaders: false }));
+router.get('/recommendations', catchAsync(api.recommendations));
+router.get('/verification-plan', catchAsync(api.verificationPlan));
+router.get('/campgrounds/:id/trust', catchAsync(api.trust));
+module.exports = router;
