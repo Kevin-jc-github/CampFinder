@@ -236,7 +236,7 @@ async function run() {
   const removed = await Campground.deleteMany(demoFilter);
   const total = await Campground.countDocuments({ dataSource: 'amap' });
   console.log(`本轮完成城市: ${processed}；本轮同步记录: ${imported}；高德 POI 总数: ${total}；移除演示数据: ${removed.deletedCount}`);
-  console.log('提示：高德 POI 未经 CampFinder 人工核验，生产使用前请确认高德数据许可条款。');
+  console.log('提示：高德 POI 未经 Camping Recommend System 人工核验，生产使用前请确认高德数据许可条款。');
   await mongoose.disconnect();
 }
 

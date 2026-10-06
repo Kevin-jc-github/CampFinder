@@ -1,6 +1,6 @@
 # Evaluation Plan
 
-CampFinder separates product metrics from algorithm metrics.
+Camping Recommend System separates product metrics from algorithm metrics.
 
 ## Reproducible commands
 
@@ -25,10 +25,10 @@ This result demonstrates the evaluation pipeline, not generalization. The next m
 ## Planned recommendation evaluation
 
 1. Ask campers to provide a trip scenario and independently rank five candidates.
-2. Compare CampFinder ordering with a distance-only baseline.
+2. Compare Camping Recommend System ordering with a distance-only baseline.
 3. Report NDCG@5 and pairwise preference accuracy.
 4. Run an ablation study removing reliability, distance and amenity signals one at a time.
-5. Measure median time to find an acceptable campsite with and without CampFinder.
+5. Measure median time to find an acceptable campsite with and without Camping Recommend System.
 
 ## Verification-planning baseline
 

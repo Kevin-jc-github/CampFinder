@@ -7,7 +7,7 @@ module.exports.register = async (req, res, next) => {
     const registeredUser = await User.register(new User({ email, username }), password);
     req.login(registeredUser, error => {
       if (error) return next(error);
-      req.flash('success', '欢迎加入 CampFinder');
+      req.flash('success', '欢迎加入 Camping Recommend System');
       res.redirect('/campgrounds');
     });
   } catch (error) {

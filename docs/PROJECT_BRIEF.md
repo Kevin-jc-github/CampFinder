@@ -1,4 +1,4 @@
-# Project Brief for Applications
+# Camping Recommend System — Project Brief for Applications
 
 ## Research question
 

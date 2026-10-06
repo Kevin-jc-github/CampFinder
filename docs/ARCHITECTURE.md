@@ -1,6 +1,6 @@
-# CampFinder Architecture
+# Camping Recommend System Architecture
 
-CampFinder is organized around the uncertainty of campsite information rather than around CRUD pages.
+Camping Recommend System is organized around the uncertainty of campsite information rather than around CRUD pages.
 
 ```text
 Amap / owner listing / community observation
@@ -54,7 +54,7 @@ Stores a user's dated observation. A report is not allowed to silently overwrite
 | Community confirmation | 15 | Accepted confirmations count more than pending reports |
 | Cross-source consistency | 10 | Penalizes conflicting field claims and open corrections |
 
-The score is not a statement that a campsite is safe. It represents how much supporting information CampFinder currently has.
+The score is not a statement that a campsite is safe. It represents how much supporting information Camping Recommend System currently has.
 
 ## Recommendation score
 

@@ -25,7 +25,7 @@ async function run() {
       extracted += 1;
       await Evidence.updateOne(
         { campground: campground._id, sourceType: 'system', sourceId: `extractor:${result.modelVersion}` },
-        { $set: { campground: campground._id, sourceType: 'system', sourceId: `extractor:${result.modelVersion}`, sourceName: 'CampFinder amenity extractor', capturedAt: new Date(), claims: inferredAmenities.map(item => ({ field: 'amenities', value: item.amenity, confidence: item.confidence })), status: 'active' } },
+        { $set: { campground: campground._id, sourceType: 'system', sourceId: `extractor:${result.modelVersion}`, sourceName: 'Camping Recommend System amenity extractor', capturedAt: new Date(), claims: inferredAmenities.map(item => ({ field: 'amenities', value: item.amenity, confidence: item.confidence })), status: 'active' } },
         { upsert: true }
       );
     }

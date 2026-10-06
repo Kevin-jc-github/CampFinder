@@ -121,7 +121,7 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
-  app.listen(port, () => console.log(`CampFinder 中国版运行于 http://localhost:${port}`));
+  app.listen(port, () => console.log(`Camping Recommend System 运行于 http://localhost:${port}`));
 }
 
 module.exports = app;

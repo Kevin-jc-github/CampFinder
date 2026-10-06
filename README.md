@@ -1,6 +1,6 @@
 <div align="center">
 
-# CampFinder China
+# Camping Recommend System
 
 ### An evidence-aware campsite discovery and recommendation system for China
 
@@ -11,19 +11,21 @@
 [![Tests](https://img.shields.io/badge/tests-23%20passing-2f855a)](#evaluation)
 [![License](https://img.shields.io/badge/code%20license-MIT-blue.svg)](LICENSE)
 
-[Why CampFinder?](#why-campfinder) · [Architecture](#system-architecture) · [Algorithms](#algorithmic-design) · [Quick start](#quick-start) · [API](#json-api) · [中文简介](#中文简介)
+[Why this project?](#why-this-project) · [Architecture](#system-architecture) · [Algorithms](#algorithmic-design) · [Quick start](#quick-start) · [API](#json-api) · [中文简介](#中文简介)
 
 </div>
 
 ## Overview
 
-CampFinder is not only a campsite directory. It is a full-stack system for making decisions from location data that may be incomplete, stale, or contradictory.
+Camping Recommend System is not only a campsite directory. It is a full-stack system for making decisions from location data that may be incomplete, stale, or contradictory.
 
 The system collects real campsite-related POIs across China, preserves field-level provenance, calculates an explainable reliability score, retrieves nearby candidates through geospatial indexing, ranks them against a camper's constraints, and determines which records should be verified first when human review capacity is limited.
 
 The current local research snapshot contains **11,417 Amap POIs across 382 cities with results**. Raw third-party data is not committed to this repository; the reproducible ingestion and processing pipeline is.
 
-## Why CampFinder?
+> The GitHub repository retains its original `CampFinder` URL for link stability; the current project and interface name is **Camping Recommend System**.
+
+## Why this project?
 
 Campsite information in China is commonly distributed across map applications, social platforms, official accounts, and individual travel posts. A traveller may find a location but still be unable to answer practical questions:
 
@@ -33,7 +35,7 @@ Campsite information in China is commonly distributed across map applications, s
 - Are two conflicting claims equally trustworthy?
 - Which nearby campsite best matches the trip rather than merely having the highest rating?
 
-CampFinder treats this as an information-quality and decision-support problem. Instead of assuming that every database field is true, it models where a claim came from, how recent it is, whether other evidence agrees, and what remains unknown.
+Camping Recommend System treats this as an information-quality and decision-support problem. Instead of assuming that every database field is true, it models where a claim came from, how recent it is, whether other evidence agrees, and what remains unknown.
 
 ## What makes it different
 
@@ -97,7 +99,7 @@ Trust(c) = Source(c) + Recency(c) + Completeness(c)
          + Community(c) + Consistency(c)
 ```
 
-The score estimates how much supporting information CampFinder has. It is **not** a physical-safety guarantee.
+The score estimates how much supporting information Camping Recommend System has. It is **not** a physical-safety guarantee.
 
 Implementation: [services/reliabilityEngine.js](services/reliabilityEngine.js)
 
@@ -339,7 +341,7 @@ CampFinder/
 
 - Amap text search can cap retrievable POIs in dense cities.
 - A POI reference cost is not necessarily an overnight campsite price.
-- Imported records are real POIs but are not automatically verified by CampFinder.
+- Imported records are real POIs but are not automatically verified by Camping Recommend System.
 - Recommendation weights are explicit product hypotheses, not parameters learned from large-scale user behavior.
 - Haversine distance approximates proximity; it does not represent driving time or route accessibility.
 - The amenity evaluation set is too small for generalization claims.
@@ -359,7 +361,7 @@ CampFinder/
 
 The source code is available under the [MIT License](LICENSE).
 
-Amap-derived data is **not** covered by the MIT code license. Anyone operating or distributing an imported dataset must independently comply with Amap's API, display, storage, attribution, and commercial-use terms. CampFinder does not claim that every imported POI is an operating campsite or that third-party values have been verified.
+Amap-derived data is **not** covered by the MIT code license. Anyone operating or distributing an imported dataset must independently comply with Amap's API, display, storage, attribution, and commercial-use terms. Camping Recommend System does not claim that every imported POI is an operating campsite or that third-party values have been verified.
 
 ## Contributing
 
@@ -374,6 +376,6 @@ This keeps the project focused on measurable improvements rather than feature ac
 
 ## 中文简介
 
-CampFinder 是一个面向中国露营场景的信息可信发现系统。它不仅提供营地搜索与地图展示，还把数据来源、更新时间、字段完整度和用户纠错建模为证据，通过可解释的可信度评分与地理空间推荐帮助用户决策；同时使用带边际收益递减的贪心规划算法，在人工核验资源有限时优先覆盖高风险且具有代表性的地区。
+Camping Recommend System 是一个面向中国露营场景的信息可信发现系统。它不仅提供营地搜索与地图展示，还把数据来源、更新时间、字段完整度和用户纠错建模为证据，通过可解释的可信度评分与地理空间推荐帮助用户决策；同时使用带边际收益递减的贪心规划算法，在人工核验资源有限时优先覆盖高风险且具有代表性的地区。
 
 项目的重点是处理真实世界中的不完整信息，而不是单纯完成一个营地增删改查网站。

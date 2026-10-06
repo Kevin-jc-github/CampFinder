@@ -17,7 +17,7 @@ function evidenceFromCampground(campground) {
     campground: campground._id,
     sourceType,
     sourceId: campground.sourceId || `listing:${campground._id}`,
-    sourceName: sourceType === 'amap' ? '高德地图 / Amap' : 'CampFinder community listing',
+    sourceName: sourceType === 'amap' ? '高德地图 / Amap' : 'Camping Recommend System community listing',
     sourceUrl: campground.bookingUrl || '',
     claims: claimsFromCampground(campground),
     capturedAt: campground.sourceUpdatedAt || campground.updatedAt || new Date(),

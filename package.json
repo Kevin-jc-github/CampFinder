@@ -1,7 +1,7 @@
 {
-  "name": "campfinder-cn",
+  "name": "camping-recommend-system",
   "version": "2.0.0",
-  "description": "面向中国露营用户的营地发现与评价平台",
+  "description": "面向中国露营场景的可信发现、推荐与主动数据核验系统",
   "main": "app.js",
   "scripts": {
     "dev": "node --watch app.js",
