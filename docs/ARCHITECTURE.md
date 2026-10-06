@@ -69,7 +69,7 @@ The score is not a statement that a campsite is safe. It represents how much sup
 | Camp type | 10% |
 | Source rating | 10% |
 
-Every result retains its component breakdown and explanation codes. This enables evaluation and avoids a black-box “recommended for you” label.
+Every result retains its component breakdown and explanation codes. A deterministic bilingual narrative generator converts the same signals into readable sentences, including relevant trade-offs such as missing prices or unconfirmed operating status. It does not call a language model, so every statement can be traced back to the ranking input. This enables evaluation and avoids a black-box “recommended for you” label.
 
 ## Information extraction
 

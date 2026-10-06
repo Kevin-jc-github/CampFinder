@@ -24,3 +24,23 @@ test('ranking is deterministic by score', () => {
   ], preferences);
   assert.equal(ranked[0].campground._id, 'strong');
 });
+
+test('recommendation includes factual bilingual natural-language explanations', () => {
+  const preferences = { origin: [121.47, 31.23], radiusKm: 200, maxPrice: 200, amenities: ['淋浴'], types: ['森林营地'] };
+  const recommendation = scoreCampground({
+    geometry: { coordinates: [121.5, 31.2] },
+    price: 150,
+    amenities: ['淋浴'],
+    inferredAmenities: [],
+    type: '森林营地',
+    reliability: { score: 82 },
+    operationalStatus: 'open',
+    sourceRating: 4.7
+  }, preferences);
+  assert.match(recommendation.narrative.zh, /距离出发地约/);
+  assert.match(recommendation.narrative.zh, /预算内/);
+  assert.match(recommendation.narrative.zh, /信息可信度为 82\/100/);
+  assert.match(recommendation.narrative.en, /within your ¥200 budget/);
+  assert.match(recommendation.narrative.en, /forest campsite type/);
+  assert.doesNotMatch(recommendation.narrative.en, /森林营地|淋浴/);
+});

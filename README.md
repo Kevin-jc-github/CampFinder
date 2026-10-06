@@ -8,7 +8,7 @@
 
 [![Node.js](https://img.shields.io/badge/Node.js-18.18%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-2dsphere-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Tests](https://img.shields.io/badge/tests-23%20passing-2f855a)](#evaluation)
+[![Tests](https://img.shields.io/badge/tests-24%20passing-2f855a)](#evaluation)
 [![License](https://img.shields.io/badge/code%20license-MIT-blue.svg)](LICENSE)
 
 [Why this project?](#why-this-project) · [Architecture](#system-architecture) · [Algorithms](#algorithmic-design) · [Quick start](#quick-start) · [API](#json-api) · [中文简介](#中文简介)
@@ -119,7 +119,7 @@ Recommendations use a two-stage process:
 | Campsite type | 10% |
 | Source rating | 10% |
 
-Distance is computed with the Haversine formula. Each result retains its component breakdown and explanation codes such as `nearby`, `within_budget`, `amenity_match`, and `high_reliability`.
+Distance is computed with the Haversine formula. Each result retains its component breakdown and explanation codes such as `nearby`, `within_budget`, `amenity_match`, and `high_reliability`. A deterministic bilingual explanation generator then turns those verified signals into a readable recommendation narrative without calling a language model or inventing unsupported facts.
 
 Implementation: [services/recommendationEngine.js](services/recommendationEngine.js)
 
@@ -171,7 +171,7 @@ Current checked-in results:
 
 | Evaluation | Result |
 | --- | ---: |
-| Automated tests | 23 / 23 passing |
+| Automated tests | 24 / 24 passing |
 | Amenity extraction precision | 1.00 |
 | Amenity extraction recall | 0.905 |
 | Amenity extraction F1 | 0.95 |

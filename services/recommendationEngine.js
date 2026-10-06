@@ -1,5 +1,26 @@
 const EARTH_RADIUS_KM = 6371;
 
+const ENGLISH_VALUES = {
+  '山野营地': 'mountain and wild',
+  '湖畔营地': 'lakeside',
+  '海边营地': 'seaside',
+  '森林营地': 'forest',
+  '草原营地': 'grassland',
+  '房车营地': 'RV park',
+  '亲子营地': 'family',
+  '精致露营': 'glamping',
+  '卫生间': 'restrooms',
+  '淋浴': 'showers',
+  '水电桩': 'RV hookups',
+  '停车场': 'parking',
+  '可明火': 'campfires',
+  '可带宠物': 'pet-friendly access',
+  '儿童活动': 'children’s activities',
+  '装备租赁': 'gear rental',
+  '餐饮': 'food service',
+  '手机信号': 'mobile signal'
+};
+
 function toRadians(value) {
   return value * Math.PI / 180;
 }
@@ -17,6 +38,119 @@ function haversineDistanceKm(origin, destination) {
 
 function clamp(value, min = 0, max = 1) {
   return Math.max(min, Math.min(max, value));
+}
+
+function joinNaturalList(items, lang) {
+  if (!items.length) return '';
+  if (lang === 'en') {
+    if (items.length === 1) return items[0];
+    return `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+  }
+  return items.join('、');
+}
+
+function joinClauses(items, lang) {
+  if (!items.length) return '';
+  if (items.length === 1) return items[0];
+  const conjunction = lang === 'en' ? ' and ' : '，并且';
+  const separator = lang === 'en' ? ', ' : '，';
+  return `${items.slice(0, -1).join(separator)}${conjunction}${items.at(-1)}`;
+}
+
+function localizedValue(value, lang) {
+  return lang === 'en' ? (ENGLISH_VALUES[value] || value) : value;
+}
+
+function buildRecommendationNarrative(campground, preferences, recommendation, lang = 'zh') {
+  const isEnglish = lang === 'en';
+  const positive = [];
+  const caveats = [];
+  const distanceKm = recommendation.distanceKm;
+  if (Number.isFinite(distanceKm)) {
+    positive.push(isEnglish
+      ? `it is about ${Math.round(distanceKm)} km from your starting point`
+      : `距离出发地约 ${Math.round(distanceKm)} 公里`);
+  }
+
+  const displayedPrice = campground.price ?? campground.sourceReferenceCost;
+  const maxPrice = Number(preferences.maxPrice);
+  if (Number.isFinite(maxPrice) && maxPrice > 0) {
+    if (displayedPrice == null) {
+      caveats.push(isEnglish ? 'its price has not been confirmed' : '价格尚未确认');
+    } else if (displayedPrice <= maxPrice) {
+      positive.push(isEnglish
+        ? `its reference price of ¥${displayedPrice} is within your ¥${maxPrice} budget`
+        : `参考消费 ¥${displayedPrice} 在你的 ¥${maxPrice} 预算内`);
+    } else {
+      caveats.push(isEnglish
+        ? `its reference price of ¥${displayedPrice} is above your ¥${maxPrice} budget`
+        : `参考消费 ¥${displayedPrice} 高于你的 ¥${maxPrice} 预算`);
+    }
+  }
+
+  const wantedAmenities = [...new Set(preferences.amenities || [])];
+  const availableAmenities = new Set([
+    ...(campground.amenities || []),
+    ...(campground.inferredAmenities || []).filter(item => item.confidence >= 0.75).map(item => item.amenity)
+  ]);
+  const matchedAmenities = wantedAmenities.filter(item => availableAmenities.has(item));
+  const missingAmenities = wantedAmenities.filter(item => !availableAmenities.has(item));
+  if (matchedAmenities.length) {
+    positive.push(isEnglish
+      ? `the available information matches ${joinNaturalList(matchedAmenities.map(item => localizedValue(item, 'en')), 'en')}`
+      : `现有资料匹配你需要的${joinNaturalList(matchedAmenities, 'zh')}`);
+  }
+  if (missingAmenities.length) {
+    caveats.push(isEnglish
+      ? `the availability of ${joinNaturalList(missingAmenities.map(item => localizedValue(item, 'en')), 'en')} still needs confirmation`
+      : `${joinNaturalList(missingAmenities, 'zh')}仍需确认`);
+  }
+
+  const preferredTypes = [...new Set(preferences.types || [])];
+  if (preferredTypes.length) {
+    if (preferredTypes.includes(campground.type)) {
+      positive.push(isEnglish
+        ? `it matches your preferred ${localizedValue(campground.type, 'en')} campsite type`
+        : `属于你偏好的${campground.type}`);
+    } else {
+      caveats.push(isEnglish
+        ? `its campsite type does not match the selected types`
+        : `营地类型不在你的首选范围内`);
+    }
+  }
+
+  const trustScore = campground.reliability?.score ?? 0;
+  if (trustScore >= 75) {
+    positive.push(isEnglish
+      ? `its information trust score is ${trustScore}/100 with relatively strong supporting evidence`
+      : `信息可信度为 ${trustScore}/100，支持证据较充分`);
+  } else if (trustScore >= 50) {
+    caveats.push(isEnglish
+      ? `its information trust score is ${trustScore}/100, so key details should be confirmed before travelling`
+      : `信息可信度为 ${trustScore}/100，出发前仍应确认关键资料`);
+  } else {
+    caveats.push(isEnglish
+      ? `its information trust score is only ${trustScore}/100 and the available evidence is limited`
+      : `信息可信度仅为 ${trustScore}/100，现有证据较有限`);
+  }
+  if (campground.operationalStatus === 'unknown') {
+    caveats.push(isEnglish ? 'its current operating status is unknown' : '当前营业状态尚未确认');
+  }
+
+  const positiveText = positive.length
+    ? (isEnglish
+      ? `This campsite is recommended because ${joinClauses(positive, 'en')}.`
+      : `推荐这个营地，是因为${joinClauses(positive, 'zh')}。`)
+    : (isEnglish
+      ? `This campsite has an overall match score of ${recommendation.score}/100.`
+      : `这个营地的综合匹配度为 ${recommendation.score}/100。`);
+  const caveatText = caveats.length
+    ? (isEnglish
+      ? `However, ${joinClauses(caveats, 'en')}.`
+      : `不过，${joinClauses(caveats, 'zh')}。`)
+    : '';
+  if (!caveatText) return positiveText;
+  return isEnglish ? `${positiveText} ${caveatText}` : `${positiveText}${caveatText}`;
 }
 
 function scoreCampground(campground, preferences = {}) {
@@ -64,7 +198,12 @@ function scoreCampground(campground, preferences = {}) {
 
   const weights = { distance: 0.25, budget: 0.15, amenities: 0.2, type: 0.1, reliability: 0.2, quality: 0.1 };
   const score = Math.round(Object.entries(weights).reduce((sum, [key, weight]) => sum + breakdown[key] * weight, 0) * 100);
-  return { score, distanceKm, breakdown, explanations: explanations.slice(0, 4), algorithmVersion: 'recommend-v1' };
+  const recommendation = { score, distanceKm, breakdown, explanations: explanations.slice(0, 4), algorithmVersion: 'recommend-v1' };
+  recommendation.narrative = {
+    zh: buildRecommendationNarrative(campground, preferences, recommendation, 'zh'),
+    en: buildRecommendationNarrative(campground, preferences, recommendation, 'en')
+  };
+  return recommendation;
 }
 
 function rankCampgrounds(campgrounds, preferences) {
@@ -73,4 +212,4 @@ function rankCampgrounds(campgrounds, preferences) {
     .sort((a, b) => b.recommendation.score - a.recommendation.score || (a.recommendation.distanceKm ?? Infinity) - (b.recommendation.distanceKm ?? Infinity));
 }
 
-module.exports = { haversineDistanceKm, scoreCampground, rankCampgrounds };
+module.exports = { haversineDistanceKm, buildRecommendationNarrative, scoreCampground, rankCampgrounds };

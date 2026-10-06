@@ -42,7 +42,8 @@ module.exports.recommendations = async (req, res) => {
       distanceKm: recommendation.distanceKm,
       trustScore: campground.reliability?.score || 0,
       breakdown: recommendation.breakdown,
-      explanations: recommendation.explanations
+      explanations: recommendation.explanations,
+      narrative: recommendation.narrative
     }))
   });
 };
