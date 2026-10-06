@@ -46,6 +46,28 @@ Camping Recommend System treats this as an information-quality and decision-supp
 - **Conservative information extraction** — bilingual rules identify campsite amenities while handling common negations and keeping inferred values separate from confirmed facts.
 - **Reproducible evaluation** — deterministic algorithms, versioned outputs, unit tests, synthetic baselines, and explicit limitations.
 
+## Product walkthrough
+
+### Preference-driven recommendation input
+
+Users can specify a starting point, search radius, budget, preferred campsite types, and required amenities. These constraints become explicit inputs to candidate retrieval and ranking rather than being hidden behind a generic “recommended” label.
+
+<p align="center">
+  <img src="docs/images/recommendation-input.png" alt="Recommendation form with location, radius, budget, campsite type, and amenity preferences" width="100%">
+</p>
+
+*The recommendation form turns a trip scenario into structured ranking constraints.*
+
+### Ranked results with natural-language explanations
+
+Each result exposes rank, distance, information reliability, matched signals, total score, and a deterministic bilingual explanation. The narrative is generated only from facts already used by the ranking algorithm and also states relevant trade-offs such as an exceeded budget or unconfirmed facilities.
+
+<p align="center">
+  <img src="docs/images/recommendation-results-explained.png" alt="Ranked campsite recommendations with trust score, match score, reason tags, and natural-language explanation" width="100%">
+</p>
+
+*Structured reason codes support quick scanning, while the natural-language explanation makes the same evidence understandable to users.*
+
 ## System architecture
 
 ```text
@@ -187,6 +209,26 @@ On the current 11,417-record local snapshot, both verification strategies were g
 | Coverage-aware greedy planning | 20 | 20 | 41.1 |
 
 The coverage-aware method expanded geographic coverage without reducing average selected risk in this snapshot. See [docs/EVALUATION.md](docs/EVALUATION.md) for methodology and limitations.
+
+### Data-quality observability
+
+The quality dashboard makes database limitations visible instead of hiding them. It reports record count, average reliability, phone coverage, confirmed amenities, inferred amenities, reliability distribution, and source distribution.
+
+<p align="center">
+  <img src="docs/images/data-quality-overview.png" alt="Data quality dashboard showing 11,417 published campsites, reliability, contact, and amenity coverage" width="100%">
+</p>
+
+*A larger database is not automatically a better database; the dashboard shows which information is still incomplete.*
+
+### Coverage-aware verification queue
+
+The active verification view turns `verify-plan-v1` into an operational queue. With a budget of 20 checks, the current plan spans 20 cities and 20 province-level regions while retaining the same average information risk as the risk-only baseline.
+
+<p align="center">
+  <img src="docs/images/active-verification-plan.png" alt="Active verification plan showing verification budget, geographic coverage, risk, and prioritized records" width="100%">
+</p>
+
+*Every selected task exposes its location, trust score, priority score, and reason for verification.*
 
 ## Product capabilities
 
