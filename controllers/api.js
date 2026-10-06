@@ -2,6 +2,7 @@ const Campground = require('../models/campground');
 const Evidence = require('../models/evidence');
 const FieldReport = require('../models/fieldReport');
 const { rankCampgrounds } = require('../services/recommendationEngine');
+const { VERSION: verificationVersion, planVerifications, summarizePlan } = require('../services/verificationPlanner');
 const ExpressError = require('../utils/ExpressError');
 
 function listParam(value) {
@@ -58,5 +59,31 @@ module.exports.trust = async (req, res) => {
     campground,
     evidence: evidence.map(item => ({ sourceType: item.sourceType, sourceName: item.sourceName, supportedFields: [...new Set(item.claims.map(claim => claim.field))], capturedAt: item.capturedAt, status: item.status })),
     reports
+  });
+};
+
+module.exports.verificationPlan = async (req, res) => {
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+  const candidates = await Campground.find({ status: 'published' })
+    .select('title province city dataSource sourceUpdatedAt updatedAt contactPhone sourceBusinessHours openSeason price sourceReferenceCost images amenities inferredAmenities geometry operationalStatus reliability')
+    .lean();
+  const plan = planVerifications(candidates, { limit });
+  res.json({
+    algorithm: verificationVersion,
+    objective: 'risk plus diminishing-return coverage across provinces, cities and failure modes',
+    summary: summarizePlan(plan),
+    results: plan.map(item => ({
+      rank: item.rank,
+      id: item.campground._id,
+      title: item.campground.title,
+      province: item.campground.province,
+      city: item.campground.city,
+      trustScore: item.campground.reliability?.score || 0,
+      verificationRisk: item.verification.baseScore,
+      priorityScore: item.marginalScore,
+      missingFields: item.verification.missingFields,
+      reasons: item.verification.reasons,
+      coverageBonus: item.coverage
+    }))
   });
 };

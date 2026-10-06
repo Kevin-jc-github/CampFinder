@@ -12,11 +12,12 @@ How can a system help campers make decisions when campsite information is fragme
 - A MongoDB geospatial and explainable recommendation engine.
 - A bilingual rule-based amenity extraction baseline with a labeled evaluation set.
 - A community correction workflow that preserves conflicting claims.
+- A budget-aware active verification planner using greedy submodular optimization to decide which records humans should check first.
 - A live data-quality dashboard and public JSON endpoints.
 
 ## What makes it more than a directory
 
-The central technical contribution is not the webpage. It is the pipeline that represents uncertainty, retrieves geographically relevant candidates, ranks them with multiple signals, and exposes why a result was recommended.
+The central technical contribution is not the webpage. It is the pipeline that represents uncertainty, retrieves geographically relevant candidates, ranks them with multiple signals, and allocates limited human verification effort across a nationwide database. Both recommendations and verification priorities expose their reasons.
 
 ## Honest limitations
 

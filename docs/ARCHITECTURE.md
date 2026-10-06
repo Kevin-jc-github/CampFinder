@@ -12,8 +12,11 @@ Amap / owner listing / community observation
                     ▼
             Reliability engine v1
  source + recency + completeness + community + consistency
-                    │
-                    ▼
+          ┌─────────┴─────────┐
+          ▼                   ▼
+ Active verification      User discovery
+ risk + diverse coverage       │
+                              ▼
        MongoDB geospatial candidate retrieval
                     │
                     ▼
@@ -72,9 +75,37 @@ Every result retains its component breakdown and explanation codes. This enables
 
 `amenity-rules-v1` is a conservative bilingual rule baseline. It handles explicit positive phrases and common negations. Extracted fields are stored in `inferredAmenities`, not in the confirmed `amenities` field.
 
+## Active verification planning
+
+`verify-plan-v1` answers a resource-allocation question: if the team can verify only `k` listings, which batch should it choose?
+
+Each listing first receives a verification-risk score from five interpretable signals:
+
+| Signal | Weight | Meaning |
+| --- | ---: | --- |
+| Low evidence confidence | 30% | Prioritizes records the trust model knows least about |
+| Staleness | 20% | Prioritizes information likely to have changed |
+| Missing critical fields | 25% | Phone, hours, price, photos, amenities and coordinates |
+| Conflicting reports | 15% | Prioritizes unresolved or cross-source disagreement |
+| Unknown operating status | 10% | Reduces the chance of recommending a non-operating site |
+
+Sorting only by risk can spend an entire fieldwork budget on near-duplicate records from one dense city. The planner instead greedily maximizes:
+
+```text
+F(S) = sum(risk(i))
+     + lambdaProvince * sum(sqrt(count by province))
+     + lambdaCity * sum(sqrt(count by city))
+     + lambdaFailure * sum(sqrt(count by primary failure mode))
+```
+
+The square-root terms have diminishing returns. The first selected record from a new city is valuable, while the twentieth similar record adds much less coverage. This is a monotone submodular objective under a cardinality constraint, so the standard greedy algorithm provides the classic `1 - 1/e` approximation guarantee. The output exposes base risk, marginal coverage bonuses and reason codes rather than hiding selection behind an opaque score.
+
+For `n` candidate listings and a verification budget of `k`, the current exact greedy implementation runs in `O(nk)` time and `O(n)` memory. With 11,417 records and `k = 20`, the local API completes in roughly 0.2 seconds; indexing or lazy-greedy optimization can be added if the database grows by orders of magnitude.
+
 ## API
 
 - `GET /api/v1/recommendations?lng=121.47&lat=31.23&radiusKm=200&maxPrice=200&types=森林营地`
+- `GET /api/v1/verification-plan?limit=20`
 - `GET /api/v1/campgrounds/:id/trust`
 
 ## Known limitations
@@ -85,3 +116,4 @@ Every result retains its component breakdown and explanation codes. This enables
 - Driving time is approximated by geodesic distance in ranking; a routing API is a future improvement.
 - Listings whose source text explicitly says “temporarily closed” or “closed” are excluded from recommendations, but source status can still be incomplete.
 - Community reports currently need a full moderation interface before production use.
+- Verification priority estimates information value; it does not estimate physical safety or replace human review.

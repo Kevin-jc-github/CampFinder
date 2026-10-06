@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { extractAmenities, VERSION: extractorVersion } = require('../services/amenityExtractor');
 const { scoreCampground } = require('../services/recommendationEngine');
+const { planVerifications, riskOnlyBaseline, summarizePlan, VERSION: verificationVersion } = require('../services/verificationPlanner');
 
 function evaluateAmenities() {
   const dataset = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'evaluation', 'amenity-labeled.json'), 'utf8'));
@@ -26,6 +27,51 @@ function evaluateRecommendationSanity() {
   return { preferredScore: good.score, weakScore: weak.score, orderingPass: good.score > weak.score, margin: good.score - weak.score };
 }
 
-const result = { generatedAt: new Date().toISOString(), amenityExtraction: evaluateAmenities(), recommendationSanity: evaluateRecommendationSanity() };
+function evaluateVerificationPlanning() {
+  const common = {
+    dataSource: 'amap',
+    geometry: { coordinates: [120, 30] },
+    contactPhone: '',
+    sourceBusinessHours: '',
+    sourceReferenceCost: null,
+    images: [],
+    amenities: [],
+    operationalStatus: 'unknown'
+  };
+  const candidates = [
+    ['bj-1', '北京市', '北京市', 10],
+    ['bj-2', '北京市', '北京市', 12],
+    ['bj-3', '北京市', '北京市', 14],
+    ['sh-1', '上海市', '上海市', 16],
+    ['hz-1', '浙江省', '杭州市', 18],
+    ['cd-1', '四川省', '成都市', 20]
+  ].map(([id, province, city, trust]) => ({
+    ...common,
+    _id: id,
+    title: id,
+    province,
+    city,
+    reliability: { score: trust, components: { recency: 2 }, reasons: [], openIssueCount: 0 }
+  }));
+  const options = { limit: 3, now: new Date('2026-10-06T00:00:00.000Z') };
+  const planned = summarizePlan(planVerifications(candidates, options));
+  const baseline = summarizePlan(riskOnlyBaseline(candidates, options));
+  return {
+    version: verificationVersion,
+    batchSize: options.limit,
+    planned,
+    riskOnlyBaseline: baseline,
+    cityCoverageGain: planned.cityCoverage - baseline.cityCoverage,
+    riskRetention: planned.averageRisk / Math.max(1, baseline.averageRisk),
+    orderingPass: planned.cityCoverage > baseline.cityCoverage && planned.averageRisk >= baseline.averageRisk - 5
+  };
+}
+
+const result = {
+  generatedAt: new Date().toISOString(),
+  amenityExtraction: evaluateAmenities(),
+  recommendationSanity: evaluateRecommendationSanity(),
+  verificationPlanning: evaluateVerificationPlanning()
+};
 console.log(JSON.stringify(result, null, 2));
-if (result.amenityExtraction.f1 < 0.75 || !result.recommendationSanity.orderingPass) process.exitCode = 1;
+if (result.amenityExtraction.f1 < 0.75 || !result.recommendationSanity.orderingPass || !result.verificationPlanning.orderingPass) process.exitCode = 1;
